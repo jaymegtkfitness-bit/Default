@@ -1,0 +1,28 @@
+# Phase 2: Switch to PostgreSQL + pgvector by updating DATABASE_URL and uncommenting this.
+# For Phase 1, SQLite is used automatically (no Docker needed).
+
+version: "3.9"
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: legacy_performance
+      POSTGRES_USER: lp
+      POSTGRES_PASSWORD: lp_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  assistant:
+    build: .
+    env_file: .env
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://lp:lp_dev_password@db:5432/legacy_performance
+    command: python -m app.main
+
+volumes:
+  pgdata:
