@@ -227,11 +227,19 @@ He didn't learn this from a textbook — he built a system out of his own recove
 - **Phase 4 — Long (~6 weeks):** Sustain/reverse — lock in the result, prove the system holds in real life.
 - **Then — Mastery:** coaching steps down by design → monthly 1:1 calls, weekly dashboard check-ins, monthly planning, quarterly architecture.
 
-- **Built for More Complete — $10,000 / 12 months:** full track sequence + bundled Mastery continuity + peptides + genetic testing. The flagship anchor.
-- **− Genetic testing → ~$9,000**
-- **− Peptides → ~$2,000 off**
-- **− Bundled Mastery → ~$2,000 off**
-- **Built for More Core (floor) — $5,000 / 6 months:** intensive coaching only; no peptides, no genetics, no bundled Mastery; $99/week if they continue after.
+**Pricing ladder — start at $10,000 Complete, subtract à la carte:**
+
+| Package | What's included | Price |
+|---|---|---|
+| **Built for More Complete** | Full track sequence (Foundations → Strong → Lean → Long) + genetic testing + peptides + bundled Mastery continuity (12 months total) | **$10,000** |
+| **Without genetic testing** | Everything in Complete except genetic testing (−$1,000) | **$9,000** |
+| **Without genetic testing + peptides** | Everything in Complete except genetics and peptides (−$1,000 −$2,000) | **$7,000** |
+| **Built for More Core** *(floor)* | Coaching only — no genetics, no peptides, no bundled Mastery; $99/week if they continue after | **$5,000** |
+
+- Each subtraction is a clean dollar amount off the $10,000 anchor: genetics −$1K, peptides −$2K, bundled Mastery −$2K. Together they equal exactly the $5,000 Core floor.
+- Genetic testing ($1,000 à la carte; costs ~$500–600 to run) is a strong sweetener to bundle into Complete — high perceived value, strong reason to go Complete vs. stripping it.
+- Peptides are physician-guided via IHN medical team — always say "physician-guided" or "medical team," never "Jayme runs your peptides."
+- Bundled Mastery = months 7–12 of the 12-month Complete engagement. Without it, coaching ends after the intensive (~6.5–7 months) and client can continue at $99/week afterward.
 
 **4. Built for More Accelerators** — à-la-carte 1:1 done-for-you:
 - **Genetic Blueprint**
