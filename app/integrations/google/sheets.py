@@ -24,9 +24,19 @@ def _is_configured() -> bool:
     return bool(settings.google_service_account_info and settings.google_sheets_tasks_id)
 
 
-def _sync_ensure_headers(service) -> None:
+def _sync_ensure_tab(service) -> None:
     tab = settings.google_sheets_tasks_tab
     sid = settings.google_sheets_tasks_id
+
+    meta = service.spreadsheets().get(spreadsheetId=sid).execute()
+    existing = [s["properties"]["title"] for s in meta.get("sheets", [])]
+
+    if tab not in existing:
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=sid,
+            body={"requests": [{"addSheet": {"properties": {"title": tab}}}]},
+        ).execute()
+
     result = service.spreadsheets().values().get(
         spreadsheetId=sid,
         range=f"{tab}!A1:H1",
@@ -52,7 +62,7 @@ def _sync_append(item_id: int, description: str, client_name: str | None,
     creds = Credentials.from_service_account_info(creds_info, scopes=_SCOPES)
     service = build("sheets", "v4", credentials=creds)
 
-    _sync_ensure_headers(service)
+    _sync_ensure_tab(service)
 
     row = [item_id, description, client_name or "", due_date or "", priority, "pending", source, created_at]
     service.spreadsheets().values().append(
