@@ -106,6 +106,22 @@ async def _dispatch_tool(
             ),
         })
 
+    if name == "read_recent_emails":
+        from app.integrations.google.gmail import get_recent_emails
+        emails = await get_recent_emails(
+            max_results=min(tool_input.get("max_results", 10), 20),
+            unread_only=tool_input.get("unread_only", True),
+        )
+        return json.dumps(emails)
+
+    if name == "search_emails":
+        from app.integrations.google.gmail import search_emails
+        emails = await search_emails(
+            query=tool_input["query"],
+            max_results=min(tool_input.get("max_results", 5), 10),
+        )
+        return json.dumps(emails)
+
     if name == "get_recent_zoom_transcripts":
         from app.integrations.zoom.client import get_recent_transcripts
         transcripts = await get_recent_transcripts(days=tool_input.get("days_back", 7))

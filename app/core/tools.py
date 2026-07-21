@@ -144,6 +144,51 @@ TOOLS = [
         },
     },
     {
+        "name": "read_recent_emails",
+        "description": (
+            "Read recent emails from Jayme's Gmail inbox. Use when Jayme asks to check email, "
+            "'any emails from clients?', 'what's in my inbox?', or similar. "
+            "After reading, extract any action items and create them with create_action_item. "
+            "Flag anything urgent or from clients."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "max_results": {
+                    "type": "integer",
+                    "description": "How many emails to fetch (default 10, max 20)",
+                },
+                "unread_only": {
+                    "type": "boolean",
+                    "description": "Only fetch unread emails (default true)",
+                },
+            },
+            "required": [],
+        },
+    },
+    {
+        "name": "search_emails",
+        "description": (
+            "Search Gmail for specific emails. Use when Jayme asks about emails from a specific "
+            "person, on a specific topic, or with a specific keyword. "
+            "Supports Gmail search syntax: 'from:name@example.com', 'subject:invoice', etc."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Gmail search query (e.g. 'from:sarah subject:contract', 'is:unread label:important')",
+                },
+                "max_results": {
+                    "type": "integer",
+                    "description": "Max emails to return (default 5)",
+                },
+            },
+            "required": ["query"],
+        },
+    },
+    {
         "name": "get_recent_zoom_transcripts",
         "description": (
             "Fetch recent Zoom call transcripts. Use when Jayme says 'analyze my last call', "

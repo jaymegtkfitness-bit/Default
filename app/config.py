@@ -30,12 +30,17 @@ class Settings(BaseSettings):
     zoom_client_secret: str = ""
     zoom_webhook_secret_token: str = ""
 
-    # Google (Service Account)
+    # Google (Service Account — for Sheets/Drive)
     google_service_account_json: str = ""   # JSON string or path to .json file
     google_sheets_tasks_id: str = ""         # spreadsheet ID (not the published CSV ID)
     google_sheets_tasks_tab: str = "Tasks"   # tab name within the spreadsheet
     google_drive_transcript_folder_id: str = ""
     google_drive_knowledge_folder_ids: str = ""
+
+    # Gmail (OAuth2 — run scripts/setup_gmail.py once to generate these)
+    gmail_client_id: str = ""
+    gmail_client_secret: str = ""
+    gmail_refresh_token: str = ""
 
     # Everfit
     everfit_api_token: str = ""
