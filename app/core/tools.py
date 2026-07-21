@@ -1,6 +1,5 @@
 """
-Claude tool definitions for Phase 1.
-Phase 2+ will add GHL, Everfit, Skool, Zoom, and knowledge-base tools.
+Claude tool definitions.
 """
 
 TOOLS = [
@@ -142,6 +141,25 @@ TOOLS = [
                 },
             },
             "required": ["content_type", "topic"],
+        },
+    },
+    {
+        "name": "get_recent_zoom_transcripts",
+        "description": (
+            "Fetch recent Zoom call transcripts. Use when Jayme says 'analyze my last call', "
+            "'what did we discuss in my last zoom', or any variation. Returns transcript text "
+            "for up to 3 recent recordings. After calling this, summarize the call, identify "
+            "the client, extract all action items, and create them with create_action_item."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "days_back": {
+                    "type": "integer",
+                    "description": "How many days back to look for recordings (default 7, max 30)",
+                },
+            },
+            "required": [],
         },
     },
 ]

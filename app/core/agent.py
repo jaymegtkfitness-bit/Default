@@ -35,10 +35,31 @@ async def _dispatch_tool(
             due_date=tool_input.get("due_date"),
             priority=tool_input.get("priority", "normal"),
         )
+        # Mirror to Google Sheets if configured
+        try:
+            from app.integrations.google.sheets import append_action_item
+            await append_action_item(
+                item_id=item.id,
+                description=item.description,
+                client_name=item.client_name,
+                due_date=item.due_date,
+                priority=item.priority,
+                source=item.source or "telegram",
+                created_at=item.created_at.isoformat(),
+            )
+        except Exception as exc:
+            log.warning("sheets_sync_skipped", error=str(exc))
+
         return json.dumps({"id": item.id, "description": item.description, "status": "created"})
 
     if name == "complete_action_item":
         success = await memory.complete_action_item(db, tool_input["action_item_id"])
+        if success:
+            try:
+                from app.integrations.google.sheets import mark_done
+                await mark_done(tool_input["action_item_id"])
+            except Exception as exc:
+                log.warning("sheets_done_sync_skipped", error=str(exc))
         return json.dumps({"success": success})
 
     if name == "list_pending_action_items":
@@ -71,8 +92,6 @@ async def _dispatch_tool(
         ])
 
     if name == "draft_content":
-        # The actual drafting happens in Claude's response — this tool signals the intent.
-        # Return the parameters so Claude can write the draft in its final turn.
         return json.dumps({
             "status": "ready_to_draft",
             "content_type": tool_input["content_type"],
@@ -86,6 +105,11 @@ async def _dispatch_tool(
                 "Present it clearly so Jayme can review and approve before it goes anywhere."
             ),
         })
+
+    if name == "get_recent_zoom_transcripts":
+        from app.integrations.zoom.client import get_recent_transcripts
+        transcripts = await get_recent_transcripts(days=tool_input.get("days_back", 7))
+        return json.dumps(transcripts)
 
     log.warning("unknown_tool", name=name)
     return json.dumps({"error": f"Unknown tool: {name}"})
@@ -113,7 +137,7 @@ async def run(
 
     final_text = ""
     iteration = 0
-    max_iterations = 10  # safety cap
+    max_iterations = 10
 
     while iteration < max_iterations:
         iteration += 1
@@ -128,7 +152,6 @@ async def run(
         )
 
         if response.stop_reason == "end_turn":
-            # Extract text from response
             for block in response.content:
                 if hasattr(block, "text"):
                     final_text = block.text
@@ -136,7 +159,6 @@ async def run(
             break
 
         if response.stop_reason == "tool_use":
-            # Append assistant message (may contain both text and tool_use blocks)
             assistant_content = []
             for block in response.content:
                 if hasattr(block, "text") and block.text:
@@ -150,7 +172,6 @@ async def run(
                     })
             messages.append({"role": "assistant", "content": assistant_content})
 
-            # Execute all tool calls
             tool_results = []
             for block in response.content:
                 if block.type == "tool_use":
@@ -165,7 +186,6 @@ async def run(
             messages.append({"role": "user", "content": tool_results})
             continue
 
-        # Unexpected stop reason
         log.warning("unexpected_stop_reason", reason=response.stop_reason)
         break
 

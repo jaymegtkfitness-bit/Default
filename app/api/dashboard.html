@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LP Command Center</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --border: #222;
+      --gold: #c9a84c;
+      --gold-dim: #8a6e2e;
+      --text: #e8e8e8;
+      --muted: #666;
+      --high: #e05252;
+      --normal: #c9a84c;
+      --low: #4e9a6c;
+      --radius: 8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    #status {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    section { margin-bottom: 40px; }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* Add item form */
+    #add-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    #add-form input, #add-form select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #add-form input:focus, #add-form select:focus {
+      border-color: var(--gold-dim);
+    }
+
+    #add-form input[name="description"] { flex: 1; min-width: 200px; }
+    #add-form input[name="client"] { width: 140px; }
+    #add-form input[name="due_date"] { width: 148px; }
+    #add-form select[name="priority"] { width: 110px; }
+
+    #add-form button {
+      background: var(--gold);
+      color: #0a0a0a;
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    #add-form button:hover { opacity: 0.85; }
+    #add-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Priority groups */
+    .priority-group { margin-bottom: 20px; }
+
+    .priority-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .priority-label.high { background: rgba(224,82,82,0.15); color: var(--high); }
+    .priority-label.normal { background: rgba(201,168,76,0.12); color: var(--normal); }
+    .priority-label.low { background: rgba(78,154,108,0.12); color: var(--low); }
+
+    /* Action item card */
+    .action-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.15s;
+    }
+    .action-item:hover { border-color: #333; }
+
+    .action-item-body { flex: 1; min-width: 0; }
+
+    .action-desc {
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .action-meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .done-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      border-color: var(--low);
+      color: var(--low);
+    }
+    .done-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* Call summaries */
+    .call-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+
+    .call-topic {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .call-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .call-summary {
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.6;
+    }
+
+    /* Loader */
+    .loader {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      #add-form input[name="client"], #add-form input[name="due_date"] { width: 100%; }
+      #add-form select[name="priority"] { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>LP Command Center</h1>
+  <span id="status">Loading…</span>
+</header>
+
+<main>
+
+  <section id="actions-section">
+    <div class="section-title">Action Items</div>
+
+    <form id="add-form">
+      <input name="description" type="text" placeholder="Add a task…" required autocomplete="off">
+      <input name="client" type="text" placeholder="Client (optional)">
+      <input name="due_date" type="date">
+      <select name="priority">
+        <option value="normal">Normal</option>
+        <option value="high">High</option>
+        <option value="low">Low</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+
+    <div id="actions-list"><div class="loader">Loading…</div></div>
+  </section>
+
+  <section id="calls-section">
+    <div class="section-title">Recent Calls</div>
+    <div id="calls-list"><div class="loader">Loading…</div></div>
+  </section>
+
+</main>
+
+<script>
+  const fmt = {
+    date: (iso) => iso ? new Date(iso).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : null,
+    datetime: (iso) => iso ? new Date(iso).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) : null,
+  };
+
+  async function fetchJSON(url, opts) {
+    const r = await fetch(url, opts);
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return r.json();
+  }
+
+  // ── Render actions ─────────────────────────────────────────────────────────
+
+  function renderActions(items) {
+    const container = document.getElementById('actions-list');
+    if (!items.length) {
+      container.innerHTML = '<div class="empty">No open action items. Talk to the bot to add some.</div>';
+      return;
+    }
+
+    const groups = { high: [], normal: [], low: [] };
+    items.forEach(i => (groups[i.priority] || groups.normal).push(i));
+
+    let html = '';
+    for (const [priority, list] of Object.entries(groups)) {
+      if (!list.length) continue;
+      const label = priority.charAt(0).toUpperCase() + priority.slice(1);
+      html += `<div class="priority-group">
+        <span class="priority-label ${priority}">${label}</span>`;
+      list.forEach(item => {
+        const meta = [];
+        if (item.client_name) meta.push(`<span>👤 ${item.client_name}</span>`);
+        if (item.due_date) meta.push(`<span>📅 ${fmt.date(item.due_date)}</span>`);
+        meta.push(`<span>Added ${fmt.date(item.created_at)}</span>`);
+
+        html += `<div class="action-item" data-id="${item.id}">
+          <div class="action-item-body">
+            <div class="action-desc">${escHtml(item.description)}</div>
+            <div class="action-meta">${meta.join('')}</div>
+          </div>
+          <button class="done-btn" onclick="markDone(${item.id}, this)">Done</button>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  async function markDone(id, btn) {
+    btn.disabled = true;
+    btn.textContent = '…';
+    try {
+      await fetchJSON(`/api/actions/${id}/done`, { method: 'POST' });
+      btn.closest('.action-item').style.opacity = '0.3';
+      setTimeout(() => {
+        btn.closest('.action-item').remove();
+        checkEmpty();
+      }, 600);
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = 'Done';
+      alert('Error: ' + e.message);
+    }
+  }
+
+  function checkEmpty() {
+    const container = document.getElementById('actions-list');
+    if (!container.querySelector('.action-item')) {
+      container.innerHTML = '<div class="empty">All done! Talk to the bot to add new tasks.</div>';
+    }
+  }
+
+  // ── Add form ───────────────────────────────────────────────────────────────
+
+  document.getElementById('add-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('button');
+    const desc = form.description.value.trim();
+    if (!desc) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Adding…';
+
+    try {
+      await fetchJSON('/api/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: desc,
+          client_name: form.client.value.trim() || null,
+          due_date: form.due_date.value || null,
+          priority: form.priority.value,
+        }),
+      });
+      form.reset();
+      await loadActions();
+    } catch(e) {
+      alert('Error: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Add';
+    }
+  });
+
+  // ── Render calls ───────────────────────────────────────────────────────────
+
+  function renderCalls(calls) {
+    const container = document.getElementById('calls-list');
+    if (!calls.length) {
+      container.innerHTML = '<div class="empty">No call summaries yet. Say "analyze my last Zoom call" to the bot.</div>';
+      return;
+    }
+    container.innerHTML = calls.map(c => `
+      <div class="call-card">
+        <div class="call-topic">${escHtml(c.meeting_topic || 'Untitled Call')}</div>
+        <div class="call-meta">${fmt.datetime(c.meeting_date || c.created_at)}${c.participants ? ' · ' + escHtml(c.participants) : ''}</div>
+        ${c.summary ? `<div class="call-summary">${escHtml(c.summary).replace(/\n/g, '<br>')}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  // ── Load data ──────────────────────────────────────────────────────────────
+
+  async function loadActions() {
+    try {
+      const items = await fetchJSON('/api/actions');
+      renderActions(items);
+    } catch(e) {
+      document.getElementById('actions-list').innerHTML = `<div class="empty">Error loading actions: ${escHtml(e.message)}</div>`;
+    }
+  }
+
+  async function loadCalls() {
+    try {
+      const calls = await fetchJSON('/api/calls');
+      renderCalls(calls);
+    } catch(e) {
+      document.getElementById('calls-list').innerHTML = `<div class="empty">Error loading calls: ${escHtml(e.message)}</div>`;
+    }
+  }
+
+  async function refresh() {
+    setStatus('Refreshing…');
+    await Promise.all([loadActions(), loadCalls()]);
+    setStatus('Updated ' + new Date().toLocaleTimeString());
+  }
+
+  function setStatus(msg) {
+    document.getElementById('status').textContent = msg;
+  }
+
+  function escHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+
+  refresh();
+  setInterval(refresh, 30_000);
+</script>
+</body>
+</html>
